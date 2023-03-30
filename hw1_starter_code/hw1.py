@@ -29,7 +29,6 @@ class MANN(nn.Module):
         super(MANN, self).__init__()
         self.num_classes = num_classes
         self.samples_per_class = samples_per_class
-
         self.layer1 = torch.nn.LSTM(num_classes + 784, hidden_dim, batch_first=True)
         self.layer2 = torch.nn.LSTM(hidden_dim, num_classes, batch_first=True)
         initialize_weights(self.layer1)
@@ -44,10 +43,10 @@ class MANN(nn.Module):
         Returns:
             [B, K+1, N, N] predictions
         """
-        #############################
-        #### YOUR CODE GOES HERE ####
-        pass
-        #############################
+        x = torch.concat([input_images, input_labels], dim=-1)
+        x = self.layer1(x)
+        x = self.layer2(x)
+        return x
 
     def loss_function(self, preds, labels):
         """
@@ -58,12 +57,11 @@ class MANN(nn.Module):
         Returns:
             scalar loss
         Note:
-            Loss should only be calculated on the N test images
+            Loss is only calculated on the N test images,
+            ignoring the first the N * K training images.
         """
-        #############################
-        #### YOUR CODE GOES HERE ####
-        pass
-        #############################
+        loss = F.cross_entropy(preds[:, 1], labels[:, 1])
+        return loss
 
 
 def train_step(images, labels, model, optim, eval=False):

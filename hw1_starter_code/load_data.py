@@ -132,10 +132,33 @@ class DataGenerator(IterableDataset):
             1 query.
         """
 
-        #############################
-        #### YOUR CODE GOES HERE ####
-        pass
-        #############################
+        n = self.num_classes
+        s = self.num_samples_per_class  # s may be k + 1
+
+        paths = np.random.choice(self.folders, size=n, replace=False)
+        print(paths)
+        print(paths.shape)
+        label_tokens = np.eye(n)
+        labels_image_paths = get_images(paths, 
+                                        label_tokens, 
+                                        nb_samples=s
+                                        )
+        images = [
+            self.image_file_to_array(image_path, self.dim_input)
+            for _, image_path in labels_image_paths
+        ]
+
+        labels = [label for label, _ in labels_image_paths]
+        images = np.stack(images, axis=1).reshape((s, n, self.dim_input))
+        labels = np.stack(labels, axis=1)
+
+        # shuffle the last element of k dimension (dimension 0 or return arrays)
+        label_tokens_shuffled = np.eye(n)
+        np.random.shuffle(label_tokens_shuffled)
+        images[-1] = images[-1][label_tokens_shuffled]
+        labels[-1] = label_tokens_shuffled
+
+        return images, labels
 
     def __iter__(self):
         while True:
